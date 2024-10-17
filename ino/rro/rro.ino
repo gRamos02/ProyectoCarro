@@ -1,52 +1,76 @@
-const int PinIN1 = 7;
-const int PinIN2 = 6;
+const int motorAIn1 = 8;
+const int motorAIn2 = 7;
+const int motorAEnable = 9;
 
-const int PinIN3 = 9;
-const int PinIN4 = 10;
+const int motorBIn3 = 13;
+const int motorBIn4 = 12;
+const int motorBEnable = 11;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(PinIN1, OUTPUT);
-  pinMode(PinIN2, OUTPUT);
-  pinMode(PinIN3, OUTPUT);
-  pinMode(PinIN4, OUTPUT);
+  pinMode(motorAIn1, OUTPUT);
+  pinMode(motorAIn2, OUTPUT);
+  pinMode(motorAEnable, OUTPUT);
+  pinMode(motorBIn3, OUTPUT);
+  pinMode(motorBIn4, OUTPUT);
+  pinMode(motorBEnable, OUTPUT);
 }
  
-
 void loop() {
+  if (Serial.available() > 0) {
+    char command = Serial.read();  // Leer el carácter enviado por el monitor serial
+    command = tolower(command);    // Convertir a minúscula para evitar problemas con mayúsculas
 
-  MotorHorario();
-  Serial.println("Giro del Motor en sentido horario");
-  delay(5000);
-
-  MotorAntihorario();
-  Serial.println("Giro del Motor en sentido antihorario");
-  delay(5000);
-
-  MotorStop();
-  Serial.println("Motor Detenido");
-  delay(3000);
-
-}
-//función para girar el motor en sentido horario
-void MotorHorario()
-{
-  digitalWrite (PinIN1, HIGH);
-  digitalWrite (PinIN2, LOW);
-
-  digitalWrite(PinIN3, HIGH);
-  digitalWrite(PinIN4, LOW);
-}
-//función para girar el motor en sentido antihorario
-void MotorAntihorario()
-{
-  digitalWrite (PinIN1, LOW);
-  digitalWrite (PinIN2, HIGH);
+    if (command == 'e') {
+      MotorHorario();
+      Serial.println("Motores girando hacia adelante");
+    } 
+    else if (command == 'r') {
+      MotorAntihorario();
+      Serial.println("Motores girando en reversa");
+    } 
+    else if (command == 's') {
+      MotorStop();
+      Serial.println("Motores detenidos");
+    }
+  }
 }
 
-//función para apagar el motor
-void MotorStop()
-{
-  digitalWrite (PinIN1, LOW);
-  digitalWrite (PinIN2, LOW);
+// Función para girar los motores hacia adelante (horario)
+void MotorHorario() {
+  // Invertir la lógica del motor A para corregir la dirección
+  digitalWrite(motorAIn1, LOW);  // Cambiar LOW
+  digitalWrite(motorAIn2, HIGH); // Cambiar HIGH
+  digitalWrite(motorAEnable, HIGH);
+
+  // Motor B adelante
+  digitalWrite(motorBIn3, HIGH);
+  digitalWrite(motorBIn4, LOW);
+  digitalWrite(motorBEnable, HIGH);
+}
+
+// Función para girar los motores en reversa (antihorario)
+void MotorAntihorario() {
+  // Invertir la lógica del motor A para corregir la dirección
+  digitalWrite(motorAIn1, HIGH); // Cambiar HIGH
+  digitalWrite(motorAIn2, LOW);  // Cambiar LOW
+  digitalWrite(motorAEnable, HIGH);
+
+  // Motor B reversa
+  digitalWrite(motorBIn3, LOW);
+  digitalWrite(motorBIn4, HIGH);
+  digitalWrite(motorBEnable, HIGH);
+}
+
+// Función para detener los motores
+void MotorStop() {
+  // Apagar Motor A
+  digitalWrite(motorAIn1, LOW);
+  digitalWrite(motorAIn2, LOW);
+  digitalWrite(motorAEnable, LOW);
+
+  // Apagar Motor B
+  digitalWrite(motorBIn3, LOW);
+  digitalWrite(motorBIn4, LOW);
+  digitalWrite(motorBEnable, LOW);
 }
