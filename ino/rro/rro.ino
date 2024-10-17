@@ -13,6 +13,8 @@ const int motorBIn3 = 13;
 const int motorBIn4 = 12;
 const int motorBEnable = 11;
 
+String command = "";
+
 void setup() {
   Serial.begin(9600);        // Comunicación serial para el monitor serial
   Bluetooth.begin(9600);     // Configuración del Bluetooth
@@ -27,100 +29,89 @@ void setup() {
 }
  
 void loop() {
-  // Comprobamos si hay datos recibidos desde el Bluetooth
-  if (Bluetooth.available()) {
-    char command = Bluetooth.read();  // Leer el carácter enviado por Bluetooth
-    command = tolower(command);       // Convertir a minúscula para evitar problemas con mayúsculas
-
-    if (command == 'e') {
-      MotorHorario();
-      Serial.println("Motores girando hacia adelante");
-      Bluetooth.println("Motores girando hacia adelante");
-    } 
-    else if (command == 'r') {
-      MotorAntihorario();
-      Serial.println("Motores girando en reversa");
-      Bluetooth.println("Motores girando en reversa");
-    } 
-    else if (command == 's') {
-      MotorStop();
-      Serial.println("Motores detenidos");
-      Bluetooth.println("Motores detenidos");
-    }
-    else if (command == 'i') {  // Girar a la izquierda
-      MotorIzquierda();
-      Serial.println("Girando a la izquierda");
-      Bluetooth.println("Girando a la izquierda");
-    }
-    else if (command == 'd') {  // Girar a la derecha
-      MotorDerecha();
-      Serial.println("Girando a la derecha");
-      Bluetooth.println("Girando a la derecha");
+  while (Bluetooth.available()) {
+    char incomingChar = Bluetooth.read();
+    // Serial.println(incomingChar);
+    if (incomingChar == '\n') {
+      Serial.println(command);
+      processCommand(command);
+      command = "";  // Clear command buffer for the next command
+    } else {
+      command += incomingChar;  // Add character to the command
     }
   }
 }
 
-// Función para girar los motores hacia adelante (horario)
-void MotorHorario() {
-  // Motor A adelante
-  digitalWrite(motorAIn1, LOW);
-  digitalWrite(motorAIn2, HIGH);
-  digitalWrite(motorAEnable, HIGH);
+void processCommand(String command) {
+    command.trim();  // Eliminar espacios en blanco
+    Serial.println(command);
 
-  // Motor B adelante
-  digitalWrite(motorBIn3, HIGH);
-  digitalWrite(motorBIn4, LOW);
-  digitalWrite(motorBEnable, HIGH);
+    if (command.startsWith("i:")) {  // Comando para motor izquierdo (motor B)
+      int speed = command.substring(2).toInt();  // Obtener valor de velocidad
+      setMotorA(speed);
+      Serial.println("Motor A adelante con velocidad: " + String(speed));
+    } 
+    else if (command.startsWith("d:")) {  // Comando para motor derecho (motor A)
+      int speed = command.substring(2).toInt();  // Obtener valor de velocidad
+      setMotorB(speed);
+      Serial.println("Motor B adelante con velocidad: " + String(speed));
+    } 
+    else if (command == "rl") {  // Reversa motor izquierdo (motor B)
+      reverseMotorA();
+      Serial.println("Motor B en reversa");
+    } 
+    else if (command == "rd") {  // Reversa motor derecho (motor A)
+      reverseMotorB();
+      Serial.println("Motor A en reversa");
+    } 
+    else if (command == "stopA") {  // Detener motor A
+      stopMotorA();
+      Serial.println("Motor A detenido");
+    }
+    else if (command == "stopB") {  // Detener motor B
+      stopMotorB();
+      Serial.println("Motor B detenido");
+    }
 }
 
-// Función para girar los motores en reversa (antihorario)
-void MotorAntihorario() {
-  // Motor A reversa
+// Función para ajustar el motor A con la velocidad indicada
+void setMotorA(int speed) {
+  digitalWrite(motorAIn1, LOW);
+  digitalWrite(motorAIn2, HIGH);
+  analogWrite(motorAEnable, speed);  // Controla la velocidad con PWM
+}
+
+// Función para ajustar el motor B con la velocidad indicada
+void setMotorB(int speed) {
+  digitalWrite(motorBIn3, HIGH);
+  digitalWrite(motorBIn4, LOW);
+  analogWrite(motorBEnable, speed);  // Controla la velocidad con PWM
+}
+
+// Función para reversa del motor A
+void reverseMotorA() {
   digitalWrite(motorAIn1, HIGH);
   digitalWrite(motorAIn2, LOW);
-  digitalWrite(motorAEnable, HIGH);
+  analogWrite(motorAEnable, 255);  // Velocidad fija al máximo
+}
 
-  // Motor B reversa
+// Función para reversa del motor B
+void reverseMotorB() {
   digitalWrite(motorBIn3, LOW);
   digitalWrite(motorBIn4, HIGH);
-  digitalWrite(motorBEnable, HIGH);
+  analogWrite(motorBEnable, 255);  // Velocidad fija al máximo
 }
 
-// Función para girar a la izquierda
-void MotorIzquierda() {
-  // Motor A adelante
-  digitalWrite(motorAIn1, LOW);
-  digitalWrite(motorAIn2, HIGH);
-  digitalWrite(motorAEnable, HIGH);
-
-  // Detener Motor B
-  digitalWrite(motorBIn3, LOW);
-  digitalWrite(motorBIn4, LOW);
-  digitalWrite(motorBEnable, LOW);
-}
-
-// Función para girar a la derecha
-void MotorDerecha() {
-  // Detener Motor A
+// Función para detener el motor A
+void stopMotorA() {
   digitalWrite(motorAIn1, LOW);
   digitalWrite(motorAIn2, LOW);
-  digitalWrite(motorAEnable, LOW);
-
-  // Motor B adelante
-  digitalWrite(motorBIn3, HIGH);
-  digitalWrite(motorBIn4, LOW);
-  digitalWrite(motorBEnable, HIGH);
+  analogWrite(motorAEnable, 0);  // Apaga el motor
 }
 
-// Función para detener los motores
-void MotorStop() {
-  // Apagar Motor A
-  digitalWrite(motorAIn1, LOW);
-  digitalWrite(motorAIn2, LOW);
-  digitalWrite(motorAEnable, LOW);
-
-  // Apagar Motor B
+// Función para detener el motor B
+void stopMotorB() {
   digitalWrite(motorBIn3, LOW);
   digitalWrite(motorBIn4, LOW);
-  digitalWrite(motorBEnable, LOW);
+  analogWrite(motorBEnable, 0);  // Apaga el motor
 }

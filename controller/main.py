@@ -4,8 +4,11 @@ import sys
 import serial
 import time
 
-ser = serial.Serial('COM6', 9600)  
-time.sleep(2)
+print("Start")
+port="COM7" 
+bluetooth=serial.Serial(port, 9600)#Start communications with the bluetooth unit
+print("Conectado")
+bluetooth.flushInput() #This gives the bluetooth a little kick
 
 #Estado de botones
 left_trigger = 0
@@ -14,14 +17,16 @@ left_reverse = False
 right_reverse = False
 
 def send_command(command):
-    ser.write(command.encode())
+    bluetooth.write(f"{command}\n".encode())
     print(f"Comando enviado: {command}")
 
 def process_input():
+    print("Procesado entrada...")
     global left_trigger, right_trigger, left_reverse, right_reverse
     while True:
         events = get_gamepad()
         for event in events:
+            print(event.code);
             if event.code == "ABS_Z":  # Left trigger
                 if event.state != left_trigger:  # Check for state change
                     left_trigger = event.state
@@ -30,7 +35,7 @@ def process_input():
                     else:
                         send_command("stopA")  # Stop left motor when trigger released
 
-            elif event.code == "ABS_ZR":  # Right trigger
+            elif event.code == "ABS_RZ":  # Right trigger
                 if event.state != right_trigger:
                     right_trigger = event.state
                     if right_trigger > 0:
@@ -53,6 +58,8 @@ def process_input():
                         send_command("rd")  # Reverse right motor
                     else:
                         send_command("stopB")  # Stop right motor when button released
+    time.sleep(0.1) 
+
 
 if __name__ == '__main__':
     try:
