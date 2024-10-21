@@ -27,38 +27,38 @@ def process_input():
         events = get_gamepad()
         for event in events:
             print(event.code);
-            if event.code == "ABS_Z":  # Left trigger
-                if event.state != left_trigger:  # Check for state change
+            if event.code == "ABS_Z": 
+                if event.state != left_trigger:  
                     left_trigger = event.state
                     if left_trigger > 0:
-                        send_command(f"i:{left_trigger}")  # Send forward with speed
+                        send_command(f"r")  
                     else:
-                        send_command("stopA")  # Stop left motor when trigger released
+                        send_command("stop")  
 
-            elif event.code == "ABS_RZ":  # Right trigger
+            elif event.code == "ABS_RZ":  
                 if event.state != right_trigger:
                     right_trigger = event.state
                     if right_trigger > 0:
-                        send_command(f"d:{right_trigger}")  # Send forward with speed
+                        send_command(f"d")  
                     else:
-                        send_command("stopB")  # Stop right motor when trigger released
+                        send_command("stop")  
 
-            elif event.code == "BTN_TL":  # Reverse left motor
+            elif event.code == "BTN_TL":  
                 if event.state != left_reverse:
                     left_reverse = event.state
                     if left_reverse:
-                        send_command("rl")  # Reverse left motor
+                        send_command("lt")  
                     else:
-                        send_command("stopA")  # Stop left motor when button released
+                        send_command("stop")  
 
-            elif event.code == "BTN_TR":  # Reverse right motor
+            elif event.code == "BTN_TR":  
                 if event.state != right_reverse:
                     right_reverse = event.state
                     if right_reverse:
-                        send_command("rd")  # Reverse right motor
+                        send_command("rt")  
                     else:
-                        send_command("stopB")  # Stop right motor when button released
-    time.sleep(0.1) 
+                        send_command("stop")
+        # time.sleep(0.5) 
 
 
 if __name__ == '__main__':
@@ -68,5 +68,7 @@ if __name__ == '__main__':
         print("Control zeteado")
         try:
             sys.exit(130)
+            bluetooth.close()
         except SystemExit:
             os._exit(130)
+            bluetooth.close()
