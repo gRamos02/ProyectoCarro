@@ -48,7 +48,7 @@ namespace PruebaControl
             rightValue = Math.Abs(rightValue) < deadZoneThreshold ? 0 : rightValue;
             leftValue = Math.Abs(leftValue) < deadZoneThreshold ? 0 : leftValue;
 
-            double scalingFactor = 0.3;
+            double scalingFactor = 0.7;
             rightValue *= scalingFactor;
             leftValue *= scalingFactor;
 
